@@ -39,6 +39,7 @@ export default function Calculator() {
             setIsResult(false);
             return;
         }
+
         if (operator === '') {
             setOperand1(prev => prev + operand);
         } else {
@@ -47,8 +48,13 @@ export default function Calculator() {
     }
 
     const handleClickOperator = (newOperator) => {
+        if (isResult) {
+            setIsResult(false);
+        }
+
         if (operand1 && operator && operand2) {
             handleClickEqual();
+            setIsResult(false);
             setOperator(newOperator);
         } else if (operand1 === '' && newOperator === '-') {
             setOperand1(newOperator);
@@ -102,7 +108,11 @@ export default function Calculator() {
     return (
         <main className={s.calculator}>
             <div className={s['calculator__display']} ref={displayRef}>
-                <p className={s['calculator__value']}>{operand1}{operator}{operand2}</p>
+                <p className={`${s['calculator__value']} 
+                ${isResult ? s['calculator__value--result'] : ''}`}
+                >
+                    {operand1}{operator}{operand2}
+                </p>
             </div>
             <div className={s['calculator__controls']}>
                 {buttons.length > 0 && buttons.map((button) => {
@@ -119,7 +129,6 @@ export default function Calculator() {
                         onClickHandler = () => handleClickEqual();
                         classButton = s['calculator__button--equal'];
                     }
-
                     return (
                         <button
                             className={`${s['calculator__button']} ${classButton}`}

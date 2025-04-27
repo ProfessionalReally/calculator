@@ -28,6 +28,11 @@
   &__value {
     font-size: px-to-rem(40);
     font-weight: 600;
+
+    &--result {
+      color: $color-result;
+      font-weight: 700;
+    }
   }
 
   &__controls {
