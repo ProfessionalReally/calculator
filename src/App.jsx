@@ -1,4 +1,4 @@
-import Calculator from "./assets/components/Calculator/Calculator.jsx";
+import Calculator from "./components/Calculator/Calculator.jsx";
 import s from './app.module.scss';
 
 export default function App() {

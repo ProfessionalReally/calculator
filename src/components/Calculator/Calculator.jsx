@@ -1,22 +1,19 @@
-import s from '../../../styles/components/calculator.module.scss';
+import s from '../../styles/components/calculator.module.scss';
 import {useEffect, useRef, useState} from "react";
+import {
+    CALCULATOR_BUTTONS as buttons,
+    CALCULATOR_BUTTONS_TYPE as buttonsType,
+    ENUM_SIGNS as signs
+} from "../../constants";
 
-const buttons = [
-    {content: '7', type: 'number'},
-    {content: '8', type: 'number'},
-    {content: '9', type: 'number'},
-    {content: 'C', type: 'clear'},
-    {content: '4', type: 'number'},
-    {content: '5', type: 'number'},
-    {content: '6', type: 'number'},
-    {content: '+', type: 'operator'},
-    {content: '1', type: 'number'},
-    {content: '2', type: 'number'},
-    {content: '3', type: 'number'},
-    {content: '-', type: 'operator'},
-    {content: '0', type: 'number'},
-    {content: '=', type: 'equal'},
-]
+const toFormatResult = (result) => {
+    const rounded = +result.toPrecision(9);
+    let strResult = rounded.toString();
+    if (strResult.includes(signs.Comma)) {
+        strResult = strResult.replace(/\.?0+$/, '');
+    }
+    return strResult;
+}
 
 export default function Calculator() {
     const [operand1, setOperand1] = useState('');
@@ -40,11 +37,16 @@ export default function Calculator() {
             return;
         }
 
+        if (operand1 === signs.Infinity) {
+            handleClickClear();
+            return;
+        }
+
         if (operator === '') {
             setOperand1(prev => prev + operand);
-        } else {
-            setOperand2(prev => prev + operand);
+            return;
         }
+        setOperand2(prev => prev + operand);
     }
 
     const handleClickOperator = (newOperator) => {
@@ -56,11 +58,24 @@ export default function Calculator() {
             handleClickEqual();
             setIsResult(false);
             setOperator(newOperator);
-        } else if (operand1 === '' && newOperator === '-') {
+            return;
+        }
+
+        if (operand1 === signs.Infinity) {
+            return;
+        }
+
+        if (operand1 === '' && newOperator === signs.Minus) {
             setOperand1(newOperator);
-        } else if (operand1 === '-' && newOperator === '+') {
+            return;
+        }
+
+        if (operand1 === signs.Minus && newOperator === signs.Plus) {
             setOperand1('');
-        } else if (operand1 === '' || operand1 === '-' && newOperator) {
+            return;
+        }
+
+        if ((operand1 === '' || operand1 === signs.Minus) && newOperator) {
             return;
         }
         setOperator(newOperator);
@@ -87,22 +102,53 @@ export default function Calculator() {
             return;
         }
 
+        console.log(operator);
+
         let result;
         switch (operator) {
-            case '+':
+            case signs.Plus:
                 result = num1 + num2;
                 break;
-            case '-':
+            case signs.Minus:
                 result = num1 - num2;
+                break;
+            case signs.Multiplication:
+                result = num1 * num2;
+                break;
+            case signs.Division:
+                result = num2 ? num1 / num2 : signs.Infinity;
+                break;
+            case signs.Percent:
+                result = (num1 * num2) / 100;
                 break;
             default:
                 console.error('Unsupported operator');
         }
 
-        setOperand1(result.toString());
+        result = toFormatResult(result);
+
+        setOperand1(result);
         setOperator('');
         setOperand2('');
         setIsResult(true);
+    }
+
+    const handleClickComma = () => {
+        if (isResult) {
+            setOperand1(`0${signs.Comma}`);
+            setIsResult(false);
+            return;
+        }
+
+        if (operator) {
+            if (!operand2.includes('.')) {
+                setOperand2(!operand2 ? `0${signs.Comma}` : operand2 + signs.Comma);
+            }
+        } else {
+            if (!operand1.includes('.')) {
+                setOperand1(!operand1 ? `0${signs.Comma}` : operand1 + signs.Comma);
+            }
+        }
     }
 
     return (
@@ -115,27 +161,29 @@ export default function Calculator() {
                 </p>
             </div>
             <div className={s['calculator__controls']}>
-                {buttons.length > 0 && buttons.map((button) => {
+                {buttons.length > 0 && buttons.map(({content, type}) => {
                     let onClickHandler, classButton = '';
-                    if (button.type === 'number') {
-                        onClickHandler = () => handleClickNumbers(button.content);
-                    } else if (button.type === 'operator') {
-                        onClickHandler = () => handleClickOperator(button.content);
+                    if (type === buttonsType.Number) {
+                        onClickHandler = () => handleClickNumbers(content);
+                    } else if (type === buttonsType.Operator) {
+                        onClickHandler = () => handleClickOperator(content);
                         classButton = s['calculator__button--operator'];
-                    } else if (button.type === 'clear') {
+                    } else if (type === buttonsType.Clear) {
                         onClickHandler = () => handleClickClear();
                         classButton = s['calculator__button--clear'];
-                    } else if (button.type === 'equal') {
+                    } else if (type === buttonsType.Equal) {
                         onClickHandler = () => handleClickEqual();
                         classButton = s['calculator__button--equal'];
+                    } else if (type === buttonsType.Comma) {
+                        onClickHandler = () => handleClickComma();
                     }
                     return (
                         <button
                             className={`${s['calculator__button']} ${classButton}`}
                             onClick={onClickHandler}
-                            key={button.content}
+                            key={content}
                         >
-                            {button.content}
+                            {content}
                         </button>
                     )
                 })}

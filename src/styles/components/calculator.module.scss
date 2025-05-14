@@ -54,7 +54,8 @@
     height: 56px;
     padding: px-to-rem(10);
     border-radius: 10px;
-    transition: background-color .3s ease;
+    transition: background-color .3s ease,
+    box-shadow .2s ease;
 
     &:hover {
       background-color: color.adjust($color-button, $lightness: -8%);
@@ -70,17 +71,19 @@
     color: $color-light;
 
     &:hover {
-      background-color: color.adjust($color-button-operator, $lightness: -8%);
+      background-color: color.adjust($color-button-operator, $lightness: 8%);
     }
   }
 
   &__button--equal {
     grid-column-start: 4;
+    grid-row: 4 / 6;
+    height: 100%;
     background-color: $color-button-equal;
     color: $color-light;
 
     &:hover {
-      background-color: color.adjust($color-button-equal, $lightness: -8%);
+      background-color: color.adjust($color-button-equal, $lightness: 8%);
     }
   }
 
